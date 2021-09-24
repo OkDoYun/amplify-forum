@@ -6,6 +6,9 @@ import { DotsVerticalIcon } from "@heroicons/react/solid";
 import { ViewGridAddIcon } from "@heroicons/react/solid";
 import { Dialog, Transition } from "@headlessui/react";
 import Link from "next/link";
+import { API } from "aws-amplify";
+import * as queries from "../src/graphql/queries";
+import * as mutations from "../src/graphql/mutations";
 
 const TOPICS = [
   {
@@ -167,19 +170,51 @@ function AddNewTopicButton({ onClick }) {
 function Home() {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({ title: "" });
-  const topics = TOPICS;
+  const [ topics, setTopics ] = useState([]);
+  const [createInProgress, setCreateInProgress] = useState(false);
 
   useEffect(() => {
     checkUser(); // new function call
+    fetchTopics(); 
   }, []);
+
+  async function fetchTopics() {
+   try {
+     const data = await API.graphql({ query: queries.listTopics });
+     setTopics(data.data.listTopics.items);
+   } catch (err) {
+     console.log({ err });
+   }
+  }
 
   async function checkUser() {
     const user = await Auth.currentAuthenticatedUser();
     console.log("user: ", user);
     console.log("user attributes: ", user.attributes);
   }
+  async function createNewTopic() {
+    setCreateInProgress(true);
+    try {
+      const newData = await API.graphql({
+        query: mutations.createTopic,
+        variables: { input: formData },
+      });
+  
+      console.log(newData);
+      alert("New Topic Created!");
+      setFormData({ title: "" });
+    } catch (err) {
+      console.log(err);
+      const errMsg = err.errors
+        ? err.errors.map(({ message }) => message).join("\n")
+        : "Oops! Something went wrong!";
+      alert(errMsg);
+    }
+    setOpen(false);
+    setCreateInProgress(false);
+  }
 
-  const disableSubmit = formData.title.length === 0;
+  const disableSubmit = createInProgress || formData.title.length === 0;
 
   console.log("topics = ", topics);
 
@@ -213,6 +248,7 @@ function Home() {
               formData={formData}
               setFormData={setFormData}
               disableSubmit={disableSubmit}
+              handleSubmit={createNewTopic}
             />
           </Modal>
         </main>
