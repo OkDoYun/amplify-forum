@@ -9,6 +9,8 @@ import Link from "next/link";
 import { API } from "aws-amplify";
 import * as queries from "../src/graphql/queries";
 import * as mutations from "../src/graphql/mutations";
+import * as subscriptions from "../src/graphql/subscriptions";
+
 
 const TOPICS = [
   {
@@ -176,7 +178,26 @@ function Home() {
   useEffect(() => {
     checkUser(); // new function call
     fetchTopics(); 
+    const subscription = subscribeToOnCreateTopic();
+      return () => {
+        subscription.unsubscribe();
+      };
   }, []);
+
+  function subscribeToOnCreateTopic() {
+    const subscription = API.graphql({
+      query: subscriptions.onCreateTopic,
+    }).subscribe({
+      next: ({ provider, value }) => {
+        console.log({ provider, value });
+        const item = value.data.onCreateTopic;
+        setTopics((topics) => [item, ...topics]);
+      },
+      error: (error) => console.warn(error),
+    });
+  
+    return subscription;
+  }
 
   async function fetchTopics() {
    try {

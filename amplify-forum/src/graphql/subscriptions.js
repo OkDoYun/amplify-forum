@@ -1,6 +1,50 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
+export const onCreateCommentByTopicId = /* GraphQL */ `
+  subscription OnCreateCommentByTopicId($topicId: String!) {
+    onCreateCommentByTopicId(topicId: $topicId) {
+      id
+      topicId
+      content
+      topic {
+        id
+        title
+        comments {
+          nextToken
+        }
+        createdAt
+        updatedAt
+        owner
+      }
+      createdAt
+      updatedAt
+      owner
+    }
+  }
+`;
+export const onDeleteCommentByTopicId = /* GraphQL */ `
+  subscription OnDeleteCommentByTopicId($topicId: String!) {
+    onDeleteCommentByTopicId(topicId: $topicId) {
+      id
+      topicId
+      content
+      topic {
+        id
+        title
+        comments {
+          nextToken
+        }
+        createdAt
+        updatedAt
+        owner
+      }
+      createdAt
+      updatedAt
+      owner
+    }
+  }
+`;
 export const onCreateTopic = /* GraphQL */ `
   subscription OnCreateTopic {
     onCreateTopic {
